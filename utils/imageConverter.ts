@@ -4,7 +4,6 @@
  * @returns A new File object containing the GIF image
  */
 export async function convertToGif(file: File): Promise<File> {
-  // Create a canvas to draw the image
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')
 
@@ -12,17 +11,13 @@ export async function convertToGif(file: File): Promise<File> {
     throw new Error('Failed to get canvas context')
   }
 
-  // Load the image
   const img = await loadImage(file)
 
-  // Set canvas size to match image
   canvas.width = img.width
   canvas.height = img.height
 
-  // Draw image on canvas
   ctx.drawImage(img, 0, 0)
 
-  // Convert canvas to blob
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) {
@@ -33,8 +28,8 @@ export async function convertToGif(file: File): Promise<File> {
     }, 'image/gif')
   })
 
-  // Create a new File from the blob
-  const gifFile = new File([blob], file.name.replace(/\.(png|jpe?g)$/i, '.gif'), {
+  const gifFileName = file.name.replace(/\.(png|jpe?g)$/i, '.gif')
+  const gifFile = new File([blob], gifFileName, {
     type: 'image/gif',
     lastModified: Date.now(),
   })
