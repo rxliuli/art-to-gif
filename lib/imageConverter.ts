@@ -1,6 +1,119 @@
 import { GIFEncoder, quantize, applyPalette } from 'gifenc'
 
 /**
+ * Convert PNG/JPG image to video format using MediaRecorder
+ * @param file - The image file to convert
+ * @returns A new File object containing the video
+ */
+export async function convertToVideo(file: File): Promise<File> {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) {
+    throw new Error('Failed to get canvas context')
+  }
+
+  const img = await loadImage(file)
+
+  // Use original image dimensions
+  // Twitter will handle any necessary scaling on the server side
+  let width = img.width
+  let height = img.height
+
+  // Only enforce minimum dimensions for edge cases
+  const MIN_SIZE = 4
+  if (width < MIN_SIZE) width = MIN_SIZE
+  if (height < MIN_SIZE) height = MIN_SIZE
+
+  canvas.width = width
+  canvas.height = height
+
+  // Draw the image once
+  ctx.drawImage(img, 0, 0, width, height)
+
+  // Get media stream from canvas
+  const stream = canvas.captureStream(30) // 30fps
+
+  // Check supported MIME types
+  const mimeType = getSupportedMimeType()
+
+  // Create MediaRecorder with optimized settings
+  const mediaRecorder = new MediaRecorder(stream, {
+    mimeType,
+    videoBitsPerSecond: 2500000, // 2.5 Mbps
+  })
+
+  const chunks: Blob[] = []
+
+  return new Promise((resolve, reject) => {
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        chunks.push(event.data)
+      }
+    }
+
+    mediaRecorder.onstop = () => {
+      // Stop all tracks to free resources
+      stream.getTracks().forEach(track => track.stop())
+
+      // Create blob from chunks
+      const blob = new Blob(chunks, { type: mimeType })
+
+      // Determine file extension based on mime type
+      const extension = mimeType.includes('mp4') ? '.mp4' : '.webm'
+      const videoFileName = file.name.replace(/\.(png|jpe?g)$/i, extension)
+
+      // For Twitter compatibility, use a more standard MIME type
+      const standardMimeType = mimeType.includes('mp4') ? 'video/mp4' : 'video/webm'
+
+      const videoFile = new File([blob], videoFileName, {
+        type: standardMimeType,
+        lastModified: Date.now(),
+      })
+
+      resolve(videoFile)
+    }
+
+    mediaRecorder.onerror = (event) => {
+      stream.getTracks().forEach(track => track.stop())
+      reject(new Error('MediaRecorder error: ' + event))
+    }
+
+    // Start recording
+    mediaRecorder.start()
+
+    // Record for 600ms to ensure Twitter accepts it
+    // Twitter requires minimum 0.5 seconds, so 600ms provides a safe margin
+    setTimeout(() => {
+      mediaRecorder.stop()
+    }, 600)
+  })
+}
+
+/**
+ * Get the best supported MIME type for video recording
+ */
+function getSupportedMimeType(): string {
+  // Prefer MP4 for better Twitter compatibility, fallback to WebM
+  const types = [
+    'video/mp4;codecs=avc1',
+    'video/mp4',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+  ]
+
+  for (const type of types) {
+    if (MediaRecorder.isTypeSupported(type)) {
+      return type
+    }
+  }
+
+  // Fallback to default
+  return 'video/webm'
+}
+
+/**
  * Convert PNG/JPG image to GIF format
  * @param file - The image file to convert
  * @returns A new File object containing the GIF image

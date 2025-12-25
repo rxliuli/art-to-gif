@@ -1,8 +1,9 @@
 import { observeElement } from '@/lib/observeElement'
 import { fileSelector } from '@/lib/fileSelector'
-import { convertToGif } from '@/utils/imageConverter'
+import { convertToVideo, convertToGif } from '@/lib/imageConverter'
 import { debounce } from 'es-toolkit'
 import { simulateFileUpload } from '@/lib/simulateFileUpload'
+import { getSettings } from '@/lib/settings'
 import iconUrl from './assets/32.png'
 
 export default defineContentScript({
@@ -33,7 +34,7 @@ export default defineContentScript({
         return
       }
 
-      // Create a "Convert to GIF" button next to the upload button
+      // Create a "Convert to Video" button next to the upload button
       const convertButton = createConvertButton(
         uploadButtonContainer,
         fileInput,
@@ -62,7 +63,7 @@ export default defineContentScript({
 
       const button = document.createElement('button')
       button.type = 'button'
-      button.setAttribute('aria-label', 'Convert to GIF')
+      button.setAttribute('aria-label', 'Convert to Video')
       button.style.cssText = `
         background-color: rgba(0, 0, 0, 0);
         border-color: rgba(0, 0, 0, 0);
@@ -76,13 +77,13 @@ export default defineContentScript({
         height: 100%;
       `
 
-      // Create SVG icon (GIF text icon)
+      // Create SVG icon (Video icon)
 
       button.innerHTML = `
-        <img src="${iconUrl}" alt="GIF" style="width: 20px; height: 20px;" />
+        <img src="${iconUrl}" alt="Video" style="width: 20px; height: 20px;" />
       `
 
-      button.title = 'Click to select and auto-convert PNG/JPG to GIF'
+      button.title = 'Click to select and auto-convert PNG/JPG to Video'
 
       // Add click handler
       button.addEventListener('click', async () => {
@@ -104,12 +105,18 @@ export default defineContentScript({
           return
         }
 
-        const gifs: File[] = []
+        // Get user's preferred format from settings
+        const settings = await getSettings()
+        const convertedFiles: File[] = []
+
         for (const file of files) {
-          gifs.push(await convertToGif(file))
+          const converted = settings.defaultFormat === 'video'
+            ? await convertToVideo(file)
+            : await convertToGif(file)
+          convertedFiles.push(converted)
         }
 
-        simulateFileUpload(fileInput, gifs)
+        simulateFileUpload(fileInput, convertedFiles)
       } catch (error) {
         console.error('Error in handleConvertAndUpload:', error)
       }

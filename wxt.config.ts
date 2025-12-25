@@ -29,6 +29,7 @@ export default defineConfig({
           '128': 'icon/128.png',
         },
       },
+      permissions: ['storage'],
       homepage_url: 'https://rxliuli.com/project/art-to-gif',
     }
     if (env.browser === 'firefox') {
