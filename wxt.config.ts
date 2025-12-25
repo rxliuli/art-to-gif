@@ -14,11 +14,11 @@ export default defineConfig({
   manifestVersion: 3,
   manifest: (env) => {
     const manifest: UserManifest = {
-      name: 'Browser Extension Template',
+      name: 'Art to GIF',
       description:
-        'A template for WXT, a WebExtension framework based on Vite and React',
-      permissions: ['storage'],
-      host_permissions: ['<all_urls>'],
+        'Convert your artwork to GIF format on Twitter/X to prevent AI editing.',
+      permissions: [],
+      host_permissions: [],
       author: {
         email: 'rxliuli@gmail.com',
       },
@@ -31,7 +31,7 @@ export default defineConfig({
           '128': 'icon/128.png',
         },
       },
-      homepage_url: 'https://rxliuli.com/project/browser-extension-template',
+      homepage_url: 'https://rxliuli.com/project/art-to-gif',
     }
     if (env.browser === 'firefox') {
       manifest.browser_specific_settings = {
