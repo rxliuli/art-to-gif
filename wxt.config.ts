@@ -17,8 +17,6 @@ export default defineConfig({
       name: 'Art to GIF',
       description:
         'Convert your artwork to GIF format on Twitter/X to prevent AI editing.',
-      permissions: [],
-      host_permissions: [],
       author: {
         email: 'rxliuli@gmail.com',
       },
