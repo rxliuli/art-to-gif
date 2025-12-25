@@ -8,7 +8,7 @@ Protect your artwork on Twitter/X by automatically converting images to GIF or V
 
 The extension is available for multiple browsers:
 
-- **Chrome Web Store** - Coming soon
+- **Chrome Web Store** - https://chromewebstore.google.com/detail/art-to-gif/ieaaafobhbfkdamlidcookclikabngok
 - **Firefox Add-ons** - Coming soon
 - **Microsoft Edge Add-ons** - Coming soon
 - **Safari Extensions** - Coming soon
