@@ -31,11 +31,11 @@ export function OptionsContent() {
   }
 
   if (!settings) {
-    return <div className="min-h-screen bg-background p-4 sm:p-8">Loading...</div>
+    return <div className="min-h-dvh bg-background p-4 sm:p-8">Loading...</div>
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 sm:p-6 md:p-8">
+    <div className="min-h-dvh bg-background p-4 sm:p-6 md:p-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex items-start justify-between gap-3 mb-3 sm:mb-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
