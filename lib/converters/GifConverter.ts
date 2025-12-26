@@ -1,6 +1,6 @@
 import { GIFEncoder, quantize, applyPalette } from 'gifenc'
 import type { IImageConverter } from './IImageConverter'
-import { loadImage } from './utils'
+import { loadImage, scaleImageDimensions } from './utils'
 
 /**
  * Converts images to GIF format
@@ -25,19 +25,12 @@ export class GifConverter implements IImageConverter {
     const MAX_SIZE = 2048
     const MIN_SIZE = 4
 
-    let width = img.width
-    let height = img.height
-
-    // Check if image exceeds maximum dimensions
-    if (width > MAX_SIZE || height > MAX_SIZE) {
-      const scale = Math.min(MAX_SIZE / width, MAX_SIZE / height)
-      width = Math.floor(width * scale)
-      height = Math.floor(height * scale)
-    }
-
-    // Ensure minimum dimensions
-    if (width < MIN_SIZE) width = MIN_SIZE
-    if (height < MIN_SIZE) height = MIN_SIZE
+    const { width, height } = scaleImageDimensions(img.width, img.height, {
+      maxWidth: MAX_SIZE,
+      maxHeight: MAX_SIZE,
+      minWidth: MIN_SIZE,
+      minHeight: MIN_SIZE,
+    })
 
     canvas.width = width
     canvas.height = height

@@ -1,5 +1,5 @@
 import type { IImageConverter } from './IImageConverter'
-import { loadImage } from './utils'
+import { loadImage, scaleImageDimensions } from './utils'
 
 /**
  * Converts images to video format
@@ -20,15 +20,18 @@ export class VideoConverter implements IImageConverter {
 
     const img = await loadImage(file)
 
-    // Use original image dimensions
-    // Twitter will handle any necessary scaling on the server side
-    let width = img.width
-    let height = img.height
-
-    // Only enforce minimum dimensions for edge cases
+    // Scale image dimensions to fit Twitter video limits
+    // Twitter video limits: 1920x1200 (landscape) or 1200x1900 (portrait)
+    const MAX_WIDTH = 1920
+    const MAX_HEIGHT = img.width > img.height ? 1200 : 1900 // Landscape vs Portrait
     const MIN_SIZE = 4
-    if (width < MIN_SIZE) width = MIN_SIZE
-    if (height < MIN_SIZE) height = MIN_SIZE
+
+    const { width, height } = scaleImageDimensions(img.width, img.height, {
+      maxWidth: MAX_WIDTH,
+      maxHeight: MAX_HEIGHT,
+      minWidth: MIN_SIZE,
+      minHeight: MIN_SIZE,
+    })
 
     canvas.width = width
     canvas.height = height
@@ -61,6 +64,18 @@ export class VideoConverter implements IImageConverter {
         // Stop all tracks to free resources
         stream.getTracks().forEach((track) => track.stop())
 
+        // Check if we got any data
+        const totalSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0)
+        if (chunks.length === 0 || totalSize === 0) {
+          reject(
+            new Error(
+              `MediaRecorder failed to encode video. Canvas size: ${width}x${height}. ` +
+                'This may be due to canvas size limitations or unsupported codec.',
+            ),
+          )
+          return
+        }
+
         // Create blob from chunks
         const blob = new Blob(chunks, { type: mimeType })
 
@@ -89,11 +104,13 @@ export class VideoConverter implements IImageConverter {
       // Start recording
       mediaRecorder.start()
 
-      // Record for 600ms to ensure Twitter accepts it
-      // Twitter requires minimum 0.5 seconds, so 600ms provides a safe margin
+      // Record for 1000ms to ensure Twitter accepts it and give encoder time
+      // Twitter requires minimum 0.5 seconds, 1000ms provides margin for large canvases
       setTimeout(() => {
-        mediaRecorder.stop()
-      }, 600)
+        if (mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop()
+        }
+      }, 1000)
     })
   }
 

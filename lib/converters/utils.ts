@@ -19,3 +19,65 @@ export function loadImage(file: File): Promise<HTMLImageElement> {
     img.src = url
   })
 }
+
+export interface ScaleDimensions {
+  width: number
+  height: number
+  scale: number
+  wasScaled: boolean
+}
+
+export interface ScaleConstraints {
+  maxWidth: number
+  maxHeight: number
+  minWidth?: number
+  minHeight?: number
+}
+
+/**
+ * Scale image dimensions to fit within constraints while maintaining aspect ratio
+ * @param width - Original width
+ * @param height - Original height
+ * @param constraints - Maximum and minimum dimension constraints
+ * @returns Scaled dimensions with scale factor and whether scaling was applied
+ */
+export function scaleImageDimensions(
+  width: number,
+  height: number,
+  constraints: ScaleConstraints,
+): ScaleDimensions {
+  let newWidth = width
+  let newHeight = height
+  let scale = 1
+  let wasScaled = false
+
+  // Apply maximum dimension constraints
+  if (newWidth > constraints.maxWidth || newHeight > constraints.maxHeight) {
+    const scaleW = constraints.maxWidth / newWidth
+    const scaleH = constraints.maxHeight / newHeight
+    scale = Math.min(scaleW, scaleH)
+    newWidth = Math.round(newWidth * scale)
+    newHeight = Math.round(newHeight * scale)
+    wasScaled = true
+  }
+
+  // Apply minimum dimension constraints
+  const minWidth = constraints.minWidth ?? 1
+  const minHeight = constraints.minHeight ?? 1
+
+  if (newWidth < minWidth) {
+    newWidth = minWidth
+    wasScaled = true
+  }
+  if (newHeight < minHeight) {
+    newHeight = minHeight
+    wasScaled = true
+  }
+
+  return {
+    width: newWidth,
+    height: newHeight,
+    scale,
+    wasScaled,
+  }
+}
