@@ -3,6 +3,7 @@ import { loadImage, scaleImageDimensions } from './utils'
 
 /**
  * Converts images to video format
+ * @deprecated Use VideoConverterV2 instead
  */
 export class VideoConverter implements IImageConverter {
   /**
@@ -36,10 +37,11 @@ export class VideoConverter implements IImageConverter {
     canvas.width = width
     canvas.height = height
 
-    // Draw the image once
+    // Draw the image
     ctx.drawImage(img, 0, 0, width, height)
 
     // Get media stream from canvas
+    // Note: We need to continuously draw to ensure video frames are generated
     const stream = canvas.captureStream(30) // 30fps
 
     // Check supported MIME types
@@ -106,11 +108,36 @@ export class VideoConverter implements IImageConverter {
 
       // Record for 1000ms to ensure Twitter accepts it and give encoder time
       // Twitter requires minimum 0.5 seconds, 1000ms provides margin for large canvases
+      // We need to continuously redraw the canvas to generate video frames
+      const startTime = performance.now()
+      const duration = 1000 // milliseconds
+      let animationId: number
+
+      const animate = () => {
+        const elapsed = performance.now() - startTime
+
+        // Redraw the same image to trigger new frames
+        ctx.drawImage(img, 0, 0, width, height)
+
+        if (elapsed < duration) {
+          animationId = requestAnimationFrame(animate)
+        } else {
+          if (mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop()
+          }
+        }
+      }
+
+      // Start the animation loop
+      animationId = requestAnimationFrame(animate)
+
+      // Fallback timeout in case requestAnimationFrame doesn't work as expected
       setTimeout(() => {
         if (mediaRecorder.state !== 'inactive') {
+          cancelAnimationFrame(animationId)
           mediaRecorder.stop()
         }
-      }, 1000)
+      }, duration + 500)
     })
   }
 

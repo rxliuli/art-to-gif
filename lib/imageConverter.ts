@@ -5,7 +5,7 @@ export { VideoConverter } from './converters/VideoConverter'
 
 // Backward compatibility: export the original functions
 import { GifConverter } from './converters/GifConverter'
-import { VideoConverter } from './converters/VideoConverter'
+import { VideoConverterV2 } from './converters'
 
 /**
  * Convert PNG/JPG image to video format using MediaRecorder
@@ -14,7 +14,7 @@ import { VideoConverter } from './converters/VideoConverter'
  * @deprecated Use VideoConverter class instead
  */
 export async function convertToVideo(file: File): Promise<File> {
-  const converter = new VideoConverter()
+  const converter = new VideoConverterV2()
   return converter.convert(file)
 }
 

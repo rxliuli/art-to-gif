@@ -5,5 +5,5 @@
 
 export { IImageConverter } from './IImageConverter'
 export { GifConverter } from './GifConverter'
-export { VideoConverter } from './VideoConverter'
+export { VideoConverterV2 } from './VideoConverterV2'
 export { loadImage } from './utils'

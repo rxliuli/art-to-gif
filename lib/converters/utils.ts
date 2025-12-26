@@ -81,3 +81,41 @@ export function scaleImageDimensions(
     wasScaled,
   }
 }
+
+/**
+ * Check if WebCodecs API with Twitter-compatible codecs (H.264/H.265) is supported
+ * This is used to determine if VideoConverterV2 can be used
+ */
+export async function isWebCodecsVideoSupported(): Promise<boolean> {
+  // Check if VideoEncoder API is available
+  if (typeof VideoEncoder === 'undefined') {
+    return false
+  }
+
+  // Check if at least one Twitter-compatible codec is supported
+  // Twitter/X only supports H.264 (avc) and H.265 (hevc)
+  const codecs = [
+    'avc1.42001E', // H.264 Baseline
+    'avc1.4D401E', // H.264 Main
+    'hev1.1.6.L93.B0', // H.265
+  ]
+
+  for (const codec of codecs) {
+    try {
+      const support = await VideoEncoder.isConfigSupported({
+        codec,
+        width: 1920,
+        height: 1080,
+      })
+
+      if (support.supported) {
+        return true
+      }
+    } catch {
+      // Codec check failed, try next one
+      continue
+    }
+  }
+
+  return false
+}

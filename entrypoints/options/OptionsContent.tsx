@@ -2,18 +2,22 @@ import { useState } from 'react'
 import { getSettings, saveSettings, ConversionFormat } from '@/lib/settings'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { FaDiscord } from 'react-icons/fa'
-
-// Check if MediaRecorder supports MP4 video format
-const isVideoSupported = typeof MediaRecorder !== 'undefined' &&
-  MediaRecorder.isTypeSupported('video/mp4')
+import { isWebCodecsVideoSupported } from '@/lib/converters/utils'
+import { useMount } from '@/lib/hooks/useMount'
 
 export function OptionsContent() {
   const queryClient = useQueryClient()
   const [saved, setSaved] = useState(false)
+  const [isVideoSupported, setIsVideoSupported] = useState(false)
 
   const { data: settings } = useQuery({
     queryKey: ['settings'],
     queryFn: getSettings,
+  })
+
+  // Check for WebCodecs video support on mount
+  useMount(async () => {
+    setIsVideoSupported(await isWebCodecsVideoSupported())
   })
 
   const mutation = useMutation({
@@ -91,7 +95,13 @@ export function OptionsContent() {
                 </div>
               </label>
 
-              <label className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border border-border rounded-lg ${isVideoSupported ? 'cursor-pointer hover:bg-accent' : 'cursor-not-allowed opacity-50'} transition-colors`}>
+              <label
+                className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border border-border rounded-lg ${
+                  isVideoSupported
+                    ? 'cursor-pointer hover:bg-accent'
+                    : 'cursor-not-allowed opacity-50'
+                } transition-colors`}
+              >
                 <input
                   type="radio"
                   name="format"
@@ -111,12 +121,13 @@ export function OptionsContent() {
                     )}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Modern video format with better compression
+                    Modern video format with better compression (H.264/H.265)
                     <ul className="list-disc list-inside mt-2 space-y-0.5 sm:space-y-1">
                       <li>512 MB file size limit</li>
                       <li>Millions of colors</li>
                       <li>Better compression efficiency</li>
                       <li>Higher quality output</li>
+                      <li>Twitter/X compatible codecs only</li>
                     </ul>
                   </div>
                 </div>
