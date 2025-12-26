@@ -3,6 +3,10 @@ import { getSettings, saveSettings, ConversionFormat } from '@/lib/settings'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { FaDiscord } from 'react-icons/fa'
 
+// Check if MediaRecorder supports MP4 video format
+const isVideoSupported = typeof MediaRecorder !== 'undefined' &&
+  MediaRecorder.isTypeSupported('video/mp4')
+
 export function OptionsContent() {
   const queryClient = useQueryClient()
   const [saved, setSaved] = useState(false)
@@ -87,18 +91,24 @@ export function OptionsContent() {
                 </div>
               </label>
 
-              <label className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border border-border rounded-lg cursor-pointer hover:bg-accent transition-colors">
+              <label className={`flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border border-border rounded-lg ${isVideoSupported ? 'cursor-pointer hover:bg-accent' : 'cursor-not-allowed opacity-50'} transition-colors`}>
                 <input
                   type="radio"
                   name="format"
                   value="video"
                   checked={settings.defaultFormat === 'video'}
                   onChange={() => handleFormatChange('video')}
+                  disabled={!isVideoSupported}
                   className="mt-1 shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-foreground text-sm sm:text-base">
-                    Video Format (MP4/WebM)
+                    Video Format (MP4)
+                    {!isVideoSupported && (
+                      <span className="ml-2 text-xs text-red-500 dark:text-red-400">
+                        (Not supported in this browser)
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Modern video format with better compression
