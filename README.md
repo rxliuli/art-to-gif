@@ -10,7 +10,7 @@ The extension is available for multiple browsers:
 
 - **Chrome Web Store** - <https://chromewebstore.google.com/detail/art-to-gif/ieaaafobhbfkdamlidcookclikabngok>
 - **Firefox Add-ons** - Coming soon
-- **Microsoft Edge Add-ons** - https://microsoftedge.microsoft.com/addons/detail/art-to-gif/mhkdchgbgfefbcgajfihdonajafhckan
+- **Microsoft Edge Add-ons** - <https://microsoftedge.microsoft.com/addons/detail/art-to-gif/mhkdchgbgfefbcgajfihdonajafhckan>
 - **Safari Extensions** - Coming soon
 
 ## Usage
