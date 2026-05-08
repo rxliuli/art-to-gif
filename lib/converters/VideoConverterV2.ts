@@ -41,8 +41,9 @@ export class VideoConverterV2 implements IImageConverter {
       minHeight: MIN_SIZE,
     })
 
-    canvas.width = width
-    canvas.height = height
+    // Video codecs (especially HEVC) require even dimensions
+    canvas.width = width & ~1
+    canvas.height = height & ~1
 
     // Draw the image once
     ctx.drawImage(img, 0, 0, width, height)
