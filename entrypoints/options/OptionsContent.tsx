@@ -63,10 +63,10 @@ export function OptionsContent() {
         <div className="space-y-4 sm:space-y-6">
           <div>
             <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
-              Default Conversion Format
+              Mode
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-              Choose which format to use by default when converting images
+              Choose what the button in the post composer does
             </p>
 
             <div className="space-y-3 sm:space-y-4">
@@ -132,6 +132,32 @@ export function OptionsContent() {
                   </div>
                 </div>
               </label>
+
+              <label className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 border border-border rounded-lg cursor-pointer hover:bg-accent transition-colors">
+                <input
+                  type="radio"
+                  name="format"
+                  value="strips"
+                  checked={settings.defaultFormat === 'strips'}
+                  onChange={() => handleFormatChange('strips')}
+                  className="mt-1 shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-foreground text-sm sm:text-base">
+                    3D Strips
+                  </div>
+                  <div className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Split one picture into vertical strips with the subject
+                    popping out in front of them
+                    <ul className="list-disc list-inside mt-2 space-y-0.5 sm:space-y-1">
+                      <li>Posts several PNG images instead of one</li>
+                      <li>The subject is found automatically, on your device</li>
+                      <li>Preview and adjust before adding to the post</li>
+                      <li>Images stay still pictures, so this is a style, not a protection</li>
+                    </ul>
+                  </div>
+                </div>
+              </label>
             </div>
 
             {saved && (
@@ -143,8 +169,9 @@ export function OptionsContent() {
 
           <div className="text-xs sm:text-sm text-muted-foreground pt-2 border-t border-border">
             <p>
-              Both formats help protect your artwork from AI editing tools on
-              Twitter/X. Choose the format that best suits your needs.
+              GIF and Video help protect your artwork from AI editing tools on
+              Twitter/X. The button in the post composer follows the mode
+              chosen here.
             </p>
           </div>
         </div>
