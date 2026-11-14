@@ -4,10 +4,10 @@ import { convertToVideo, convertToGif } from '@/lib/imageConverter'
 import { debounce } from 'es-toolkit'
 import { simulateFileUpload } from '@/lib/simulateFileUpload'
 import {
-  ConversionFormat,
+  type ConversionFormat,
   DEFAULT_SETTINGS,
   getSettings,
-  Settings,
+  type Settings,
 } from '@/lib/settings'
 import { openStripDialog } from '@/lib/strips/dialog'
 import { nextPaint } from '@/lib/nextPaint'

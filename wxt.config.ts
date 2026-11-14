@@ -1,8 +1,18 @@
-import { defineConfig, UserManifest } from 'wxt'
+import { defineConfig, type UserManifest } from 'wxt'
 import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
-  modules: ['@wxt-dev/module-react'],
+  modules: ['@wxt-dev/module-react', '@extport/wxt'],
+  extport: {
+    extension: 'ext_4NAXKGc4GSG6ZlIgelqN',
+    analytics: true,
+    // Builds the Xcode project for macOS and iOS on `wxt zip -b safari`.
+    safari: {
+      appCategory: 'public.app-category.productivity',
+      bundleIdentifier: 'com.rxliuli.art-to-gif',
+      developmentTeam: 'N2X78TUUFG',
+    },
+  },
   vite: () => ({
     plugins: [
       tailwindcss(),
@@ -19,11 +29,9 @@ export default defineConfig({
           )
         },
       },
-    ] as any,
+    ],
     resolve: {
-      alias: {
-        '@': __dirname,
-      },
+      tsconfigPaths: true,
     },
   }),
   manifestVersion: 3,
@@ -62,11 +70,13 @@ export default defineConfig({
           id:
             manifest.name!.toLowerCase().replaceAll(/[^a-z0-9]/g, '-') +
             '@rxliuli.com',
-          // @ts-expect-error https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_specific_settings#data_collection_permissions
           data_collection_permissions: {
             required: ['none'],
           },
         },
+        // Empty = compatible with Firefox for Android at AMO's default
+        // minimum.
+        gecko_android: {},
       }
       // https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/author
       // @ts-expect-error
@@ -76,5 +86,13 @@ export default defineConfig({
   },
   webExt: {
     disabled: true,
+  },
+  hooks: {
+    // wxt 0.21 turns on noUncheckedIndexedAccess in the generated tsconfig,
+    // which flags every indexed access in the existing code. Opt out of that
+    // one option, as imp-translate does; adopting it is a separate change.
+    'prepare:tsconfig': (_, { tsconfig }) => {
+      delete tsconfig.compilerOptions.noUncheckedIndexedAccess
+    },
   },
 })

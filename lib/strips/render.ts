@@ -1,5 +1,5 @@
 import {
-  BarGrid,
+  type BarGrid,
   computeBars,
   findMergedRange,
   fitMergedRange,

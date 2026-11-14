@@ -1,5 +1,6 @@
 // Export the interface and implementations
-export { IImageConverter, isPngOrJpg } from './converters/IImageConverter'
+export type { IImageConverter } from './converters/IImageConverter'
+export { isPngOrJpg } from './converters/IImageConverter'
 export { GifConverter } from './converters/GifConverter'
 export { VideoConverter } from './converters/VideoConverter'
 

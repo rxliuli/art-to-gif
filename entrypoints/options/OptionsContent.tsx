@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { getSettings, saveSettings, ConversionFormat } from '@/lib/settings'
+import {
+  getSettings,
+  saveSettings,
+  type ConversionFormat,
+} from '@/lib/settings'
 import { useQueryClient, useQuery, useMutation } from '@tanstack/react-query'
 import { FaDiscord } from 'react-icons/fa'
 import { isWebCodecsVideoSupported } from '@/lib/converters/utils'

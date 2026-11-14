@@ -1,14 +1,14 @@
 import { MAX_TOTAL_ASPECT, maxColumns, TIMELINE_HEIGHT } from './layout'
 import {
   drawPreview,
-  PreparedImage,
+  type PreparedImage,
   prepareImage,
   renderStrips,
-  StripResult,
+  type StripResult,
   toFiles,
 } from './render'
 import { nextPaint } from '@/lib/nextPaint'
-import { SegmentAssets, segmentSubject } from './segment'
+import { type SegmentAssets, segmentSubject } from './segment'
 
 const DEFAULT_TINT = '#a99be0'
 const COLUMN_LIMIT = 24

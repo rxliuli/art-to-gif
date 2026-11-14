@@ -1,13 +1,19 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
-import tsconfigPaths from 'vite-tsconfig-paths'
 import { playwright } from '@vitest/browser-playwright'
 
 export default defineConfig({
   test: {
     projects: [
       {
-        plugins: [react(), tsconfigPaths()] as any,
+        plugins: [react()],
+        // Pre-bundling onnxruntime-web mid-run makes Vite reload the test.
+        optimizeDeps: {
+          exclude: ['onnxruntime-web'],
+        },
+        resolve: {
+          tsconfigPaths: true,
+        },
         test: {
           exclude: ['**/*.unit.test.ts', 'node_modules/**'],
           browser: {
@@ -19,7 +25,9 @@ export default defineConfig({
         },
       },
       {
-        plugins: [tsconfigPaths()] as any,
+        resolve: {
+          tsconfigPaths: true,
+        },
         test: {
           include: ['**/*.unit.test.ts'],
           exclude: ['*.test.ts', 'node_modules/**'],
