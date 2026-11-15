@@ -16,22 +16,7 @@ export default defineConfig({
     },
   },
   vite: () => ({
-    plugins: [
-      tailwindcss(),
-      // onnxruntime-web references its .wasm with `new URL(..., import.meta.url)`,
-      // which Vite would inline into the content script. The file is shipped in
-      // public/ and loaded by URL instead.
-      {
-        name: 'skip-wasm-inline',
-        transform(code: string) {
-          if (!code.includes('ort-wasm-simd-threaded.wasm')) return
-          return code.replace(
-            /new URL\("ort-wasm-simd-threaded\.wasm",\s*import\.meta\.url\)/g,
-            '({href:""})',
-          )
-        },
-      },
-    ],
+    plugins: [tailwindcss()],
     resolve: {
       tsconfigPaths: true,
     },
@@ -56,15 +41,6 @@ export default defineConfig({
       },
       permissions: ['storage'],
       homepage_url: 'https://rxliuli.com/project/art-to-gif',
-      web_accessible_resources: [
-        {
-          resources: [
-            '/onnxruntime-web/ort-wasm-simd-threaded.wasm',
-            '/u2netp/u2netp.onnx',
-          ],
-          matches: ['https://x.com/*'],
-        },
-      ],
     }
     if (env.browser === 'firefox') {
       manifest.browser_specific_settings = {

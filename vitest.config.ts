@@ -7,10 +7,6 @@ export default defineConfig({
     projects: [
       {
         plugins: [react()],
-        // Pre-bundling onnxruntime-web mid-run makes Vite reload the test.
-        optimizeDeps: {
-          exclude: ['onnxruntime-web'],
-        },
         resolve: {
           tsconfigPaths: true,
         },

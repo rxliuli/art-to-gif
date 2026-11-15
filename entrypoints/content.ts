@@ -41,13 +41,12 @@ const MODES: Record<
       <path d="M10 9v6l5-3z" ${SOLID} />
     `,
   },
-  // Something standing in front of bars.
+  // A row of bars.
   strips: {
-    label: '3D strips',
-    title: 'Click to select a picture and split it into 3D strips',
+    label: 'Strips',
+    title: 'Click to select a picture and split it into strips',
     icon: `
-      <path d="M4 4v16M20 4v16M12 4v1.5M12 18.5V20" ${LINE} />
-      <circle cx="12" cy="12" r="4.5" ${SOLID} />
+      <path d="M5 4v16M9.67 4v16M14.33 4v16M19 4v16" ${LINE} />
     `,
   },
 }
@@ -257,12 +256,7 @@ export default defineContentScript({
           return
         }
 
-        const strips = await openStripDialog(files[0], {
-          modelUrl: browser.runtime.getURL('/u2netp/u2netp.onnx'),
-          wasmUrl: browser.runtime.getURL(
-            '/onnxruntime-web/ort-wasm-simd-threaded.wasm',
-          ),
-        })
+        const strips = await openStripDialog(files[0])
         if (strips) {
           simulateFileUpload(fileInput, strips)
         }

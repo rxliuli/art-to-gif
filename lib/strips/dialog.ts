@@ -1,4 +1,4 @@
-import { MAX_TOTAL_ASPECT, maxColumns, TIMELINE_HEIGHT } from './layout'
+import { maxColumns, TIMELINE_HEIGHT } from './layout'
 import {
   drawPreview,
   type PreparedImage,
@@ -7,11 +7,10 @@ import {
   type StripResult,
   toFiles,
 } from './render'
-import { nextPaint } from '@/lib/nextPaint'
-import { type SegmentAssets, segmentSubject } from './segment'
 
-const DEFAULT_TINT = '#a99be0'
-const COLUMN_LIMIT = 24
+/** The most images X accepts in one post. */
+const COLUMN_LIMIT = 20
+const MIN_COLUMNS = 2
 
 const STYLE = `
   :host { all: initial; }
@@ -41,29 +40,10 @@ const STYLE = `
   canvas {
     display: block; width: auto; height: 100%; max-width: 100%; object-fit: contain;
   }
-  .panel.loading canvas { display: none; }
-  /* Finding the subject blocks the page's main thread for a moment. A
-     transform animation runs off that thread, so this keeps turning. */
-  .spinner {
-    display: none; width: 32px; height: 32px; border-radius: 50%;
-    border: 3px solid var(--border); border-top-color: var(--accent);
-    animation: spin 0.8s linear infinite; will-change: transform;
-  }
-  .panel.loading .spinner { display: block; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) {
-    .spinner { animation-duration: 2.4s; }
-  }
   .status { min-height: 20px; margin: 12px 0; color: var(--muted); }
-  .status.warning { color: var(--warning); }
   .status.error { color: #f4212e; }
-  .controls { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
-  label { display: inline-flex; align-items: center; gap: 8px; }
-  label.grow { flex: 1 1 220px; }
-  .group { display: inline-flex; align-items: center; gap: 8px; }
+  label { display: flex; align-items: center; gap: 8px; }
   input[type='range'] { flex: 1; min-width: 0; }
-  input[type='checkbox'] { width: 18px; height: 18px; margin: 0; }
-  input[type='color'] { width: 36px; height: 28px; padding: 0; border: 0; background: none; }
   output { min-width: 2ch; text-align: right; font-variant-numeric: tabular-nums; }
   footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 16px; }
   button {
@@ -92,41 +72,11 @@ function readTheme(): { page: string; dark: boolean } {
   return { page, dark: 0.299 * r + 0.587 * g + 0.114 * b < 128 }
 }
 
-function describe(result: StripResult): { text: string; warning: boolean } {
-  const count = result.images.length
-  if (!result.popsOut) {
-    return {
-      text: 'The subject does not cross any gap, so nothing pops out. Try more columns.',
-      warning: true,
-    }
-  }
-  if (count === 1) {
-    return {
-      text: 'The subject covers every column, so this would upload as a single image. Try more columns, or a picture with room on the sides.',
-      warning: true,
-    }
-  }
-  if (result.subjectClipped) {
-    return {
-      text: `${count} images. The subject is wider than X shows in one image, so its outer edges will not pop out.`,
-      warning: true,
-    }
-  }
-  const note = result.cropped ? ' The sides were cropped to fit the timeline.' : ''
-  return {
-    text: `${count} images will be added to the post.${note}`,
-    warning: false,
-  }
-}
-
 /**
  * Let the user turn one picture into a set of strips. Resolves with the
  * files to upload, in order, or null if the dialog was dismissed.
  */
-export function openStripDialog(
-  file: File,
-  assets: SegmentAssets,
-): Promise<File[] | null> {
+export function openStripDialog(file: File): Promise<File[] | null> {
   return new Promise((resolve) => {
     const theme = readTheme()
     const host = document.createElement('div')
@@ -135,23 +85,15 @@ export function openStripDialog(
     host.style.setProperty('--muted', theme.dark ? '#8b98a5' : '#536471')
     host.style.setProperty('--border', theme.dark ? '#2f3336' : '#cfd9de')
     host.style.setProperty('--border-strong', theme.dark ? '#536471' : '#cfd9de')
-    host.style.setProperty('--warning', theme.dark ? '#ffd400' : '#b26a00')
-    host.style.setProperty('--accent', 'rgb(29, 155, 240)')
     const root = host.attachShadow({ mode: 'open' })
     root.innerHTML = `
       <style>${STYLE}</style>
       <div class="backdrop">
-        <div class="panel loading" role="dialog" aria-modal="true" aria-label="3D strips">
-          <h2>3D strips</h2>
-          <div class="preview"><div class="spinner"></div><canvas></canvas></div>
-          <div class="status" role="status">Finding the subject…</div>
-          <div class="controls">
-            <label class="grow">Columns <input type="range" class="columns" min="3" max="12" value="8" disabled /><output>8</output></label>
-            <span class="group">
-              <label><input type="checkbox" class="tint-on" disabled /> Bar colour</label>
-              <input type="color" class="tint" value="${DEFAULT_TINT}" disabled aria-label="Bar colour" />
-            </span>
-          </div>
+        <div class="panel" role="dialog" aria-modal="true" aria-label="Strips">
+          <h2>Strips</h2>
+          <div class="preview"><canvas></canvas></div>
+          <div class="status" role="status"></div>
+          <label>Columns <input type="range" class="columns" min="${MIN_COLUMNS}" max="${COLUMN_LIMIT}" value="8" disabled /><output>8</output></label>
           <footer>
             <button type="button" class="cancel">Cancel</button>
             <button type="button" class="primary" disabled>Add to post</button>
@@ -162,13 +104,10 @@ export function openStripDialog(
     const $ = <T extends Element>(selector: string) =>
       root.querySelector<T>(selector)!
     const backdrop = $<HTMLDivElement>('.backdrop')
-    const panel = $<HTMLDivElement>('.panel')
     const canvas = $<HTMLCanvasElement>('canvas')
     const status = $<HTMLDivElement>('.status')
     const columns = $<HTMLInputElement>('.columns')
     const columnsOutput = $<HTMLOutputElement>('output')
-    const tintOn = $<HTMLInputElement>('.tint-on')
-    const tint = $<HTMLInputElement>('.tint')
     const submit = $<HTMLButtonElement>('.primary')
 
     let prepared: PreparedImage | null = null
@@ -183,7 +122,7 @@ export function openStripDialog(
       resolve(files)
     }
 
-    const setStatus = (text: string, kind: '' | 'warning' | 'error' = '') => {
+    const setStatus = (text: string, kind: '' | 'error' = '') => {
       status.textContent = text
       status.className = `status ${kind}`.trim()
     }
@@ -198,14 +137,12 @@ export function openStripDialog(
     const update = () => {
       if (!prepared) return
       columnsOutput.textContent = columns.value
-      tint.disabled = !tintOn.checked
-      result = renderStrips(prepared, {
-        columns: Number(columns.value),
-        tint: tintOn.checked ? tint.value : null,
-      })
+      result = renderStrips(prepared, Number(columns.value))
       redraw()
-      const { text, warning } = describe(result)
-      setStatus(text, warning ? 'warning' : '')
+      const note = result.cropped
+        ? ' The sides were cropped to fit the timeline.'
+        : ''
+      setStatus(`${result.images.length} images will be added to the post.${note}`)
       submit.disabled = false
     }
 
@@ -222,8 +159,6 @@ export function openStripDialog(
     })
     $('.cancel').addEventListener('click', () => close(null))
     columns.addEventListener('input', update)
-    tintOn.addEventListener('change', update)
-    tint.addEventListener('input', update)
     submit.addEventListener('click', async () => {
       if (!result) return
       submit.disabled = true
@@ -243,41 +178,31 @@ export function openStripDialog(
 
     void (async () => {
       try {
-        // Let the dialog and its spinner reach the screen before the model
-        // takes over the main thread.
-        await nextPaint()
         const image = await createImageBitmap(file)
-        const mask = await segmentSubject(image, assets)
-        if (closed) return
-        prepared = prepareImage(image, mask)
+        if (closed) {
+          image.close()
+          return
+        }
+        prepared = prepareImage(image)
         image.close()
 
-        // The picture is framed to at most MAX_TOTAL_ASPECT before it is cut.
-        const aspect = Math.min(
-          prepared.width / prepared.height,
-          MAX_TOTAL_ASPECT,
-        )
-        const limit = Math.min(
-          COLUMN_LIMIT,
-          maxColumns(Math.round(aspect * 1000), 1000),
-        )
+        const { width, height } = prepared.canvas
+        const limit = Math.min(COLUMN_LIMIT, maxColumns(width, height))
         columns.max = String(limit)
+        // Bars about 45 px wide in the timeline.
         columns.value = String(
           Math.max(
-            3,
-            Math.min(limit, Math.round((aspect * TIMELINE_HEIGHT) / 45)),
+            MIN_COLUMNS,
+            Math.min(
+              limit,
+              Math.round(((width / height) * TIMELINE_HEIGHT) / 45),
+            ),
           ),
         )
         columns.disabled = false
-        tintOn.disabled = false
-        // A plain white or black background is invisible against one of X's
-        // themes, so give the bars a colour by default.
-        tintOn.checked = prepared.background !== 'mixed'
-        panel.classList.remove('loading')
         update()
       } catch (error) {
-        console.error('Failed to build 3D strips:', error)
-        panel.classList.remove('loading')
+        console.error('Failed to build strips:', error)
         setStatus('Could not process this image.', 'error')
       }
     })()

@@ -148,14 +148,13 @@ export function OptionsContent() {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-foreground text-sm sm:text-base">
-                    3D Strips
+                    Strips
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Split one picture into vertical strips with the subject
-                    popping out in front of them
+                    Split one picture into up to 20 vertical strips that
+                    Twitter/X shows side by side
                     <ul className="list-disc list-inside mt-2 space-y-0.5 sm:space-y-1">
                       <li>Posts several PNG images instead of one</li>
-                      <li>The subject is found automatically, on your device</li>
                       <li>Preview and adjust before adding to the post</li>
                       <li>Images stay still pictures, so this is a style, not a protection</li>
                     </ul>

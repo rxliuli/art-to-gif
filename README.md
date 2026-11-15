@@ -1,6 +1,6 @@
 # Art to GIF
 
-Post your artwork on Twitter/X as a GIF or a video, so AI editing tools can't modify it in one click. Or turn a picture into 3D strips, where the subject pops out in front of a row of bars.
+Post your artwork on Twitter/X as a GIF or a video, so AI editing tools can't modify it in one click. Or split a picture into strips that Twitter/X shows side by side as a row of bars.
 
 [![YouTube Demo](https://img.youtube.com/vi/_HxkhYOjdN0/0.jpg)](https://www.youtube.com/watch?v=_HxkhYOjdN0)
 
@@ -51,23 +51,22 @@ Why video instead of GIF?
 - **Better quality**: Videos support millions of colors instead of GIF's 256 color limit
 - **Same protection**: AI editing tools still can't process video files
 
-### 3D Strips
+### Strips
 
-Splits one picture into several images that Twitter/X shows side by side as vertical bars, with the subject drawn in front of the gaps between them so it appears to stand out from the post.
+Splits one picture into up to 20 images that Twitter/X shows side by side as vertical bars, like a view through a fence.
 
-1. Select a picture. The extension finds its subject automatically
+1. Select a picture
 2. A preview shows how the post will look in your current theme
-3. Adjust the number of columns, and optionally give the bars a color
+3. Adjust the number of columns
 4. Click **Add to post**. The images are added in the right order
 
 Things to know:
 
 - **It is a style, not a protection.** The result is still made of ordinary images, so use GIF or Video when you want to stop AI editing
-- **Everything runs on your device.** The subject is found by a small model bundled with the extension. Your picture is not uploaded anywhere except to Twitter/X when you post
-- **Pictures with a clear subject in the middle work best**, ideally one that is taller than it is wide. A subject that fills the whole width is shown smaller, because Twitter/X crops any image wider than 9:14
-- **Plain white or black backgrounds get a bar color by default.** Without one, the bars would blend into the light or dark theme
-- **The gaps are transparent**, so the effect works in both light and dark themes
-- The gaps are sized for the timeline. In a quoted post, where images are shown smaller, they look narrower than the real gaps between images
+- **Everything runs on your device.** Your picture is not uploaded anywhere except to Twitter/X when you post
+- **Tall pictures work best.** Twitter/X scrolls a row wider than about 0.85 times its height out of view, so the sides of a wider picture are cropped
+- **The part of the picture behind each gap is left out**, so lines that cross several bars stay aligned
+- The gaps are sized for the timeline. In a quoted post, where images are shown smaller, the gaps look wider than the part that was left out
 
 ## Development
 
@@ -81,11 +80,6 @@ pnpm test
 ```
 
 Releases are published through [extport](https://extport.dev): bumping the version in `package.json` on `main` builds the extension and pushes it to the Chrome, Edge, Firefox and Safari stores.
-
-## Acknowledgements
-
-- [U²-Net](https://github.com/xuebinqin/U-2-Net) (Apache-2.0), the model used to find the subject in 3D Strips mode
-- [ONNX Runtime Web](https://github.com/microsoft/onnxruntime) (MIT), which runs it in the browser
 
 ## License
 
